@@ -319,8 +319,105 @@
     margin: 36px 0 28px;
   }
 
-  /* PRINT AREA - hidden by default */
+  /* PRINT AREA - hidden by default, shown as a standalone result page */
   #print-area { display: none; }
+  #print-area.visible {
+    display: block;
+    max-width: 780px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  .result-sheet {
+    background: #fff;
+    color: #111;
+    border-radius: 12px;
+    padding: 36px 40px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    font-family: Arial, sans-serif;
+  }
+  .result-sheet h1 {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+    color: #111;
+  }
+  .result-sheet .meta {
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.9;
+  }
+  .result-sheet .score-box {
+    border: 2px solid #111;
+    border-radius: 8px;
+    padding: 16px 28px;
+    display: inline-block;
+    margin-bottom: 22px;
+    text-align: center;
+  }
+  .result-sheet .score-box .big {
+    font-size: 2.4rem;
+    font-weight: 700;
+  }
+  .result-sheet .score-box .grade {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .result-sheet table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .result-sheet th {
+    background: #111;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  .result-sheet td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #eee;
+  }
+  .result-sheet .footer {
+    margin-top: 24px;
+    font-size: 0.75rem;
+    color: #999;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+
+  /* Action buttons on the result page (hidden during actual printing) */
+  .result-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .result-actions button {
+    background: transparent;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 12px 28px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background 0.15s, color 0.15s;
+  }
+  .result-actions button:hover { background: var(--accent); color: #000; }
+  .result-actions button.secondary { border-color: var(--accent2); color: var(--accent2); }
+  .result-actions button.secondary:hover { background: var(--accent2); color: #fff; }
+
+  /* When actually printing: show only the sheet, no buttons, no dark background */
+  @media print {
+    body { background: #fff; padding: 0; }
+    header, main, .result-actions { display: none !important; }
+    #print-area.visible { margin: 0; padding: 0; max-width: 100%; }
+    .result-sheet { box-shadow: none; border-radius: 0; padding: 20px; }
+  }
 
   /* NAME CARD */
   .name-card {
@@ -638,10 +735,10 @@ ____ grade &gt;= <span class="num">70</span>:
   </div>
 </div>
 
-<!-- PRINT AREA -->
-<div id="print-area"></div>
-
 </main>
+
+<!-- PRINT AREA (outside main so it can be shown when main is hidden) -->
+<div id="print-area"></div>
 
 <script>
 const TOTAL = 15;
@@ -785,41 +882,48 @@ function printResult() {
 
   const printArea = document.getElementById('print-area');
   printArea.innerHTML = `
-    <div style="font-family:Arial,sans-serif;color:#111;padding:20px;background:#fff;">
-      <h1 style="font-size:1.3rem;margin-bottom:6px">Επαναληπτικό Τεστ Α — Α΄ Λυκείου Πληροφορική</h1>
-      <div style="font-size:0.85rem;color:#333;margin-bottom:18px;line-height:1.9">
+    <div class="result-sheet">
+      <h1>Επαναληπτικό Τεστ Α — Α΄ Λυκείου Πληροφορική</h1>
+      <div class="meta">
         <strong>Μαθητής/τρια:</strong> ${studentName}<br>
-        <strong>Εκτυπώθηκε:</strong> ${now}
+        <strong>Ημερομηνία:</strong> ${now}
       </div>
-      <div style="border:2px solid #111;border-radius:8px;padding:14px 22px;display:inline-block;margin-bottom:20px;text-align:center">
-        <div style="font-size:2.2rem;font-weight:700">${score} / 15</div>
-        <div style="font-size:1rem;font-weight:700;margin-top:4px">${grade}</div>
+      <div class="score-box">
+        <div class="big">${score} / 15</div>
+        <div class="grade">${grade}</div>
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+      <table>
         <thead><tr>
-          <th style="background:#111;color:#fff;padding:8px 12px;text-align:left">#</th>
-          <th style="background:#111;color:#fff;padding:8px 12px;text-align:left">Ερώτηση</th>
-          <th style="background:#111;color:#fff;padding:8px 12px;text-align:center">Αποτέλεσμα</th>
+          <th>#</th>
+          <th>Ερώτηση</th>
+          <th style="text-align:center">Αποτέλεσμα</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      <div style="margin-top:24px;font-size:0.75rem;color:#999;border-top:1px solid #ddd;padding-top:10px">
+      <div class="footer">
         Α΄ Λυκείου — Python &amp; HTML // Επαναληπτικό Τεστ Α
       </div>
     </div>
+    <div class="result-actions">
+      <button onclick="window.print()">🖨️ Εκτύπωση</button>
+      <button class="secondary" onclick="closeResultPage()">⬅ Επιστροφή στο Τεστ</button>
+    </div>
   `;
 
-  // Show only print area, hide rest
+  // Show the result page, hide the quiz
   document.querySelector('header').style.display = 'none';
   document.querySelector('main').style.display = 'none';
-  printArea.style.display = 'block';
+  printArea.classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-  window.print();
-
-  // Restore after print
+function closeResultPage() {
   document.querySelector('header').style.display = '';
   document.querySelector('main').style.display = '';
-  printArea.style.display = 'none';
+  const printArea = document.getElementById('print-area');
+  printArea.classList.remove('visible');
+  printArea.innerHTML = '';
+  document.getElementById('score-panel').scrollIntoView({ behavior: 'smooth' });
 }
 
 function restart() {
